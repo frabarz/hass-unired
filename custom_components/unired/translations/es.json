@@ -1,0 +1,94 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conecta tu cuenta Unired",
+        "description": "Ingresa el RUT, correo y nombre completo registrados en Unired. Si este dispositivo es nuevo, recibirás un código de verificación de 4 dígitos en tu correo.",
+        "data": {
+          "rut": "RUT (ej. 12.345.678-9)",
+          "email": "Correo electrónico",
+          "name": "Nombre completo",
+          "accept_terms": "Acepto los términos y condiciones de Unired"
+        }
+      },
+      "otp": {
+        "title": "Ingresa el código de verificación",
+        "description": "Enviamos un código de 4 dígitos a {email}. Ingrésalo abajo. No hay botón de reenvío: enviar este formulario solicita un código nuevo, y solo sirve el último código recibido.",
+        "data": {
+          "code": "Código de 4 dígitos"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconecta tu cuenta Unired",
+        "description": "Unired cerró la sesión desde otro dispositivo. Envía para recibir un nuevo código de verificación en tu correo.",
+        "data": {}
+      }
+    },
+    "error": {
+      "cannot_connect": "No se pudo contactar a los servidores de Unired. Revisa tu conexión e inténtalo de nuevo.",
+      "terms_not_accepted": "Debes aceptar los términos y condiciones para continuar.",
+      "invalid_otp": "Ese código no es válido. Solicita uno nuevo e inténtalo de nuevo.",
+      "unknown": "Error inesperado. Inténtalo de nuevo."
+    },
+    "abort": {
+      "already_configured": "Esta cuenta Unired ya está configurada.",
+      "reauth_successful": "Reconectado correctamente.",
+      "unknown": "Configuración cancelada por un error inesperado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de Unired",
+        "description": "Vincula o desvincula servicios, o ajusta el intervalo de actualización."
+      },
+      "add_service": {
+        "title": "Vincular un servicio",
+        "description": "Elige la empresa a vincular. El identificador suele ser tu RUT.",
+        "data": {
+          "company_uuid": "Empresa"
+        }
+      },
+      "add_service_manual": {
+        "title": "Vincular un servicio manualmente",
+        "description": "Ingresa el UUID de la empresa directamente.",
+        "data": {
+          "company_uuid": "UUID de la empresa"
+        }
+      },
+      "add_details": {
+        "title": "Detalles del servicio",
+        "description": "Identifica la cuenta a vincular y ponle un apodo.",
+        "data": {
+          "identifier": "Identificador (normalmente tu RUT)",
+          "nickname": "Apodo"
+        }
+      },
+      "remove_service": {
+        "title": "Desvincular servicios",
+        "description": "Selecciona las cuentas a desvincular de Unired.",
+        "data": {
+          "accounts": "Cuentas"
+        }
+      },
+      "settings": {
+        "title": "Ajustes de actualización",
+        "description": "Cada cuánto actualizar los datos, en segundos (3600–86400).",
+        "data": {
+          "scan_interval_s": "Intervalo de actualización"
+        }
+      }
+    },
+    "error": {
+      "invalid_input": "Por favor completa todos los campos.",
+      "unknown": "Error inesperado. Inténtalo de nuevo."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "bill_amount": {
+        "name": "Monto de la cuenta"
+      }
+    }
+  }
+}

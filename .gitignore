@@ -1,0 +1,21 @@
+# Nix
+result
+.direnv/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.venv/
+
+# HA runtime
+*.log
+.storage/
+
+# Reverse-engineering artifacts (large, not part of the HACS/Nix package;
+# the flake fileset already restricts the Nix src to custom_components/).
+*.apk
+unired_1.18/

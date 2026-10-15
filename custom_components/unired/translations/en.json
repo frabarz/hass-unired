@@ -1,0 +1,94 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect your Unired account",
+        "description": "Enter the RUT, e-mail and full name registered with Unired. If this device is new, a 4-digit verification code will be sent to your e-mail.",
+        "data": {
+          "rut": "RUT (e.g. 12.345.678-9)",
+          "email": "E-mail",
+          "name": "Full name",
+          "accept_terms": "I accept Unired's terms and conditions"
+        }
+      },
+      "otp": {
+        "title": "Enter the verification code",
+        "description": "We sent a 4-digit code to {email}. Enter it below. There is no resend button: submitting this form again requests a new code, and only the newest code works.",
+        "data": {
+          "code": "4-digit code"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect your Unired account",
+        "description": "Unired closed the session from another device. Submit to send a fresh verification code to your e-mail.",
+        "data": {}
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the Unired servers. Check your connection and try again.",
+      "terms_not_accepted": "You must accept the terms and conditions to continue.",
+      "invalid_otp": "That code is not valid. Request a new one and try again.",
+      "unknown": "Unexpected error. Please try again."
+    },
+    "abort": {
+      "already_configured": "This Unired account is already set up.",
+      "reauth_successful": "Reconnected successfully.",
+      "unknown": "Setup aborted due to an unexpected error."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Unired options",
+        "description": "Link or unlink utility services, or tune the poll interval."
+      },
+      "add_service": {
+        "title": "Link a service",
+        "description": "Pick the company to link. The identifier is usually your RUT.",
+        "data": {
+          "company_uuid": "Company"
+        }
+      },
+      "add_service_manual": {
+        "title": "Link a service manually",
+        "description": "Enter the company UUID directly.",
+        "data": {
+          "company_uuid": "Company UUID"
+        }
+      },
+      "add_details": {
+        "title": "Service details",
+        "description": "Identify the account to link and give it a nickname.",
+        "data": {
+          "identifier": "Identifier (usually your RUT)",
+          "nickname": "Nickname"
+        }
+      },
+      "remove_service": {
+        "title": "Unlink services",
+        "description": "Select the accounts to unlink from Unired.",
+        "data": {
+          "accounts": "Accounts"
+        }
+      },
+      "settings": {
+        "title": "Polling settings",
+        "description": "How often to refresh bill data, in seconds (3600–86400).",
+        "data": {
+          "scan_interval_s": "Scan interval"
+        }
+      }
+    },
+    "error": {
+      "invalid_input": "Please complete all fields.",
+      "unknown": "Unexpected error. Please try again."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "bill_amount": {
+        "name": "Bill amount"
+      }
+    }
+  }
+}

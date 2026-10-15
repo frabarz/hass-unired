@@ -1,0 +1,1 @@
+{"code":"0000","data":{"acceptZeroDebt":"N","allowsCredit":"N","billList":[],"instrumentUid":"aaaaaaa1-1111-4111-8111-111111111111","presentationRule":[{"code":"AUTODE","field":"TITGLO","name":"Tipo deuda","value":"Deuda Total"},{"code":"MTKPU","field":"","name":"","value":""}]},"message":"Servicio ejecutado exitosamente","result":"SUCCESS"}

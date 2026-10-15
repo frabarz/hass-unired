@@ -1,0 +1,41 @@
+# Home Assistant quality scale: Unired (target Silver, Bronze minimum).
+rules:
+  appropriate-polling:
+    status: done
+    comment: 6 h default bill poll with 1 h floor on a shared coordinator.
+  brand-assets:
+    status: done
+    comment: Local brand/ ships placeholder icon.png and icon@2x.png.
+  config-flow:
+    status: done
+  devices:
+    status: done
+  diagnostics:
+    status: done
+  discovery:
+    status: todo
+    comment: Cloud polling API without local discovery transports.
+  documentation:
+    status: done
+    comment: docs/ covers install, pairing, entities, dashboards, troubleshooting.
+  entity-device-class:
+    status: done
+  reauthentication-flow:
+    status: done
+  reconfiguration-flow:
+    status: todo
+    comment: Account changes go through the options flow instead.
+  repair-issues:
+    status: todo
+    comment: No repairs module in V1; auth failures use reauth.
+  stable-device-id:
+    status: done
+    comment: unique_id values derive from server account/instrument UUIDs.
+  test-before-configure:
+    status: done
+    comment: OTP pairing validates live against the backend before entry creation.
+  test-coverage:
+    status: done
+    comment: Unit suite across client/auth/flow/coordinator/sensor/options.
+  unique-config-entry:
+    status: done

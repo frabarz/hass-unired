@@ -1,0 +1,9 @@
+{
+  "entity": {
+    "sensor": {
+      "bill_amount": {
+        "default": "mdi:cash"
+      }
+    }
+  }
+}
