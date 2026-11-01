@@ -22,21 +22,25 @@ Home Assistant already ships.
 
 ```nix
 # flake.nix inputs
-hass-unired.url = "github:frabarz/hass-unired";
+hass-unired = {
+  url = "github:frabarz/hass-unired";
+  inputs.nixpkgs.follows = "nixpkgs";
+};
 
-# NixOS configuration
-imports = [ hass-unired.nixosModules.default ];
-
-services.home-assistant.enable = true;
-services.hass-unired = {
+# NixOS configuration (`inputs` is available via specialArgs)
+services.home-assistant = {
   enable = true;
-  package = hass-unired.packages.${pkgs.system}.unired-ha;
+  customComponents = [
+    inputs.hass-unired.packages.${pkgs.stdenv.hostPlatform.system}.default
+  ];
 };
 ```
 
 Notes:
 
-- Requires `services.home-assistant.enable = true`; the module appends the
-  component to `services.home-assistant.customComponents`.
-- Use the **same nixpkgs input** for your system and this flake to avoid Home
-  Assistant version skew. See `nixos-modules/unired.nix`.
+- The stock Home Assistant module installs the component through
+  `services.home-assistant.customComponents`; no custom NixOS module is needed.
+- Keep `inputs.nixpkgs.follows = "nixpkgs"` so the component is built against
+  the same Home Assistant version you run.
+- RUT/e-mail/OTP pairing stays in the Home Assistant UI (there is no
+  declarative YAML for this integration).

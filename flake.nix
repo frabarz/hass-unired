@@ -35,9 +35,6 @@
         }
       );
 
-      nixosModules.unired = import ./nixos-modules/unired.nix;
-      nixosModules.default = self.nixosModules.unired;
-
       devShells = nixpkgs.lib.genAttrs systems (
         system:
         let

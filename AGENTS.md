@@ -5,7 +5,7 @@
 Unofficial Home Assistant custom integration for Chilean Unired utility
 payments (water/electricity/internet bill status from the app backend
 `https://app1-prod-01.unired.cl/unired-api/v1/`). HACS-installable repo
-**and** Nix flake (`packages`, `nixosModules`, `devShells`) for NixOS
+**and** Nix flake (`packages`, `devShells`) for NixOS
 deployment.
 
 - Integration code: `custom_components/unired/` (domain `unired`,
@@ -13,9 +13,6 @@ deployment.
   stdlib + HA-bundled `aiohttp` only).
 - Nix package: `pkgs/unired-ha/package.nix` (via
   `buildHomeAssistantComponent`).
-- NixOS module: `nixos-modules/unired.nix`
-  (`services.hass-unired.{enable, package}` → appends to
-  `services.home-assistant.customComponents`).
 - API research: `findings.md` (base-URL AES decryption, device-bound OTP
   login, account/instrument/debt endpoints — all verified live 2026-10-15).
   Research method: `jadx` + `hermes-decomp` on the APKs (git-ignored,
@@ -50,14 +47,15 @@ deployment.
   2xx.
 - NixOS consumer wiring:
   ```nix
-  imports = [ hass-unired.nixosModules.default ];
-  services.hass-unired = {
+  services.home-assistant = {
     enable = true;
-    package = hass-unired.packages.${pkgs.system}.unired-ha;
+    customComponents = [
+      inputs.hass-unired.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ];
   };
   ```
-  Requires `services.home-assistant.enable = true`. RUT/e-mail/OTP pairing
-  stays in the HA UI (no declarative YAML for this integration).
+  Keep `inputs.nixpkgs.follows = "nixpkgs"` in the flake input. RUT/e-mail/OTP
+  pairing stays in the HA UI (no declarative YAML for this integration).
 - Keep `custom_components/unired/manifest.json` (`domain`, `version`,
   `requirements`) in sync with `pkgs/unired-ha/package.nix`
   (`domain`, `version`, `dependencies`) and `requirements.txt`.
