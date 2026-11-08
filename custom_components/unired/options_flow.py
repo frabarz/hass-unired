@@ -11,7 +11,11 @@ from __future__ import annotations
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigEntry, OptionsFlow
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -28,7 +32,7 @@ from .const import (
     MAX_SCAN_INTERVAL_S,
     MIN_SCAN_INTERVAL_S,
 )
-from .models import LinkableCompany, Tokens
+from .models import Account, LinkableCompany, Tokens
 
 
 class UniredOptionsFlow(OptionsFlow):
@@ -56,7 +60,9 @@ class UniredOptionsFlow(OptionsFlow):
     async def _reload(self) -> None:
         self.hass.config_entries.async_schedule_reload(self._entry.entry_id)
 
-    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> Any:
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Show the options menu."""
         return self.async_show_menu(
             step_id="init",
@@ -70,7 +76,7 @@ class UniredOptionsFlow(OptionsFlow):
 
     async def async_step_add_service(
         self, user_input: dict[str, Any] | None = None
-    ) -> Any:
+    ) -> ConfigFlowResult:
         """Pick a company from the live catalog."""
         if user_input is not None:
             self._company_uuid = str(user_input[CONF_COMPANY_UUID])
@@ -91,7 +97,7 @@ class UniredOptionsFlow(OptionsFlow):
 
     async def async_step_add_service_manual(
         self, user_input: dict[str, Any] | None = None
-    ) -> Any:
+    ) -> ConfigFlowResult:
         """Enter a company UUID by hand (catalog unreachable or custom)."""
         if user_input is not None:
             company_uuid = str(user_input[CONF_COMPANY_UUID]).strip()
@@ -110,7 +116,7 @@ class UniredOptionsFlow(OptionsFlow):
 
     async def async_step_add_details(
         self, user_input: dict[str, Any] | None = None
-    ) -> Any:
+    ) -> ConfigFlowResult:
         """Collect the service identifier + nickname, then link it."""
         if user_input is not None:
             identifier = str(user_input[CONF_IDENTIFIER]).strip()
@@ -165,7 +171,7 @@ class UniredOptionsFlow(OptionsFlow):
 
     async def async_step_remove_service(
         self, user_input: dict[str, Any] | None = None
-    ) -> Any:
+    ) -> ConfigFlowResult:
         """Unlink selected accounts server-side."""
         accounts = await self._known_accounts()
         options = {
@@ -203,7 +209,7 @@ class UniredOptionsFlow(OptionsFlow):
             ),
         )
 
-    async def _known_accounts(self) -> list[Any]:
+    async def _known_accounts(self) -> list[Account]:
         coordinator = getattr(
             getattr(self._entry, "runtime_data", None), "coordinator", None
         )
@@ -213,7 +219,7 @@ class UniredOptionsFlow(OptionsFlow):
 
     async def async_step_settings(
         self, user_input: dict[str, Any] | None = None
-    ) -> Any:
+    ) -> ConfigFlowResult:
         """Tune the poll interval."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)

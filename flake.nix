@@ -60,6 +60,7 @@
             packages = [
               pythonEnv
               pkgs.ruff
+              pkgs.zuban
               pkgs.uv
               pkgs.git
               pkgs.jq
@@ -71,9 +72,11 @@
               echo "  python: $(python --version 2>&1)"
               echo "  HA:     $(python -c 'import homeassistant.const as c; print(c.__version__)' 2>/dev/null || echo 'unavailable')"
               echo "  ruff:   $(ruff --version 2>/dev/null || echo 'unavailable')"
+              echo "  zuban:  $(zuban --version 2>/dev/null || echo 'unavailable')"
               echo ""
               echo "  pytest tests/          # run integration tests"
               echo "  ruff check . && ruff format --check ."
+              echo "  zuban check             # type check (needs this shell)"
               echo "  nix build .#unired-ha   # build Nix package"
             '';
           };

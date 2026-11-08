@@ -8,6 +8,8 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
+from .models import Bill
+
 TO_REDACT = {
     "accessToken",
     "refreshToken",
@@ -23,7 +25,7 @@ TO_REDACT = {
 }
 
 
-def _bill_dict(bill: Any) -> dict[str, Any]:
+def _bill_dict(bill: Bill) -> dict[str, object]:
     """Serialize one bill for the diagnostics payload."""
     return {
         "amount": bill.amount,
@@ -44,7 +46,7 @@ async def async_get_config_entry_diagnostics(
     coordinator snapshot and the non-sensitive scan interval are included.
     """
     data = entry.runtime_data.coordinator.data
-    payload: dict[str, Any] = {
+    payload: dict[str, object] = {
         "scan_interval_s": entry.options.get("scan_interval_s"),
         "accounts": [
             {

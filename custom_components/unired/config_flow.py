@@ -35,7 +35,7 @@ from .const import (
     normalize_rut,
 )
 from .exceptions import UniredError
-from .models import DeviceFingerprint, Tokens
+from .models import DeviceFingerprint
 
 OTP_CODES = frozenset({"0407", "0408", "0500", "0604"})
 
@@ -45,13 +45,9 @@ STEP_USER_SCHEMA = vol.Schema(
         vol.Required(CONF_EMAIL): str,
         vol.Required(CONF_NAME): str,
         vol.Required("accept_terms", default=False): bool,
-    }
+    },
 )
 STEP_OTP_SCHEMA = vol.Schema({vol.Required("code"): str})
-
-
-def _tokens_data(tokens: Tokens) -> dict[str, Any]:
-    return tokens.to_dict()
 
 
 def _error_key(failed: auth.Failed) -> str:
@@ -93,7 +89,8 @@ class UniredConfigFlow(ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
 
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+        self,
+        user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
         """Collect RUT + e-mail + name, then try login to branch the flow."""
         if user_input is None:
@@ -110,7 +107,10 @@ class UniredConfigFlow(ConfigFlow, domain=DOMAIN):
         self._device = DeviceFingerprint.generate()
         await self._unique()
         result = await auth.start_login(
-            self._client(), self._rut, self._email, self._device
+            self._client(),
+            self._rut,
+            self._email,
+            self._device,
         )
         if isinstance(result, auth.Authenticated):
             return await self._finish(result)
@@ -129,7 +129,8 @@ class UniredConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_otp(
-        self, user_input: dict[str, Any] | None = None
+        self,
+        user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
         """Verify the 4-digit e-mail code for the pending branch."""
         if self._pending is None:
@@ -195,7 +196,8 @@ class UniredConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_reauth(
-        self, entry_data: dict[str, Any] | None = None
+        self,
+        entry_data: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
         """Re-pair after 0509/0605: send a fresh device code, then verify it."""
         entry_id = self.context.get("entry_id")
@@ -218,19 +220,24 @@ class UniredConfigFlow(ConfigFlow, domain=DOMAIN):
         """Send a fresh pairing code, or show the retry form on failure."""
         try:
             reg = await self._client().register_device(
-                self._email, self._rut, self._device
+                self._email,
+                self._rut,
+                self._device,
             )
         except UniredError as err:
             self._reauth_error = _error_key(auth.Failed(err.code, str(err)))
             return await self.async_step_reauth_confirm()
         self._reauth_error = None
         self._pending = auth.NeedDevicePairing(
-            reg.device_uuid, reg.user_identifier, reg.cooldown
+            reg.device_uuid,
+            reg.user_identifier,
+            reg.cooldown,
         )
         return await self.async_step_otp()
 
     async def async_step_reauth_confirm(
-        self, user_input: dict[str, Any] | None = None
+        self,
+        user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
         """Retry sending the pairing code after a failure."""
         if user_input is None:
@@ -248,7 +255,7 @@ class UniredConfigFlow(ConfigFlow, domain=DOMAIN):
             CONF_EMAIL: self._email,
             CONF_NAME: self._name or result.name,
             CONF_DEVICE: self._device.to_dict(),
-            CONF_TOKENS: _tokens_data(result.tokens),
+            CONF_TOKENS: result.tokens.to_dict(),
         }
         if isinstance(self._pending, auth.NeedDevicePairing):
             if self._pending.user_identifier:
@@ -257,7 +264,8 @@ class UniredConfigFlow(ConfigFlow, domain=DOMAIN):
                 data[CONF_DEVICE_UUID] = self._pending.device_uuid
         if self._reauth_entry is not None:
             self.hass.config_entries.async_update_entry(
-                self._reauth_entry, data={**self._reauth_entry.data, **data}
+                self._reauth_entry,
+                data={**self._reauth_entry.data, **data},
             )
             return self.async_abort(reason="reauth_successful")
         await self._unique()

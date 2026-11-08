@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import timedelta
-from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -40,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 _RATE_LIMIT_RETRY_AFTER_S = 3600
 
 
-def _option(entry: ConfigEntry, key: str, default: Any) -> Any:
+def _option[T](entry: ConfigEntry, key: str, default: T) -> T:
     """Prefer options over setup data, falling back to a default."""
     if key in entry.options:
         return entry.options[key]
@@ -63,7 +62,7 @@ class UniredCoordinator(DataUpdateCoordinator[UniredData]):
             config_entry=entry,
             name=f"{DOMAIN}-{entry.entry_id}",
             update_interval=timedelta(
-                seconds=_option(entry, CONF_SCAN_INTERVAL_S, DEFAULT_SCAN_INTERVAL_S)
+                seconds=_option(entry, CONF_SCAN_INTERVAL_S, DEFAULT_SCAN_INTERVAL_S),
             ),
             always_update=False,
         )
@@ -75,22 +74,16 @@ class UniredCoordinator(DataUpdateCoordinator[UniredData]):
     def refresh_options(self) -> None:
         """Re-read the poll interval after an options change."""
         self.update_interval = timedelta(
-            seconds=_option(self._entry, CONF_SCAN_INTERVAL_S, DEFAULT_SCAN_INTERVAL_S)
+            seconds=_option(self._entry, CONF_SCAN_INTERVAL_S, DEFAULT_SCAN_INTERVAL_S),
         )
 
     def _tokens(self) -> Tokens:
         return Tokens.from_dict(self._entry.data[CONF_TOKENS])
 
     async def _save_tokens(self, tokens: Tokens) -> None:
-        data = {
-            "accessToken": tokens.access_token,
-            "refreshToken": tokens.refresh_token,
-            "expirationDate": tokens.expires_at.isoformat()
-            if tokens.expires_at
-            else None,
-        }
         self.hass.config_entries.async_update_entry(
-            self._entry, data={**self._entry.data, CONF_TOKENS: data}
+            self._entry,
+            data={**self._entry.data, CONF_TOKENS: tokens.to_dict()},
         )
 
     async def _refresh_tokens(self, force: bool = False) -> Tokens:
@@ -119,7 +112,9 @@ class UniredCoordinator(DataUpdateCoordinator[UniredData]):
             for instrument in items:
                 try:
                     summary = await self._client.get_debt(
-                        access_token, account.uuid, instrument.uuid
+                        access_token,
+                        account.uuid,
+                        instrument.uuid,
                     )
                 except (UniredAuthError, UniredRateLimitError):
                     raise
@@ -133,7 +128,9 @@ class UniredCoordinator(DataUpdateCoordinator[UniredData]):
                     continue
                 debts[(account.uuid, instrument.uuid)] = summary
         return UniredData(
-            accounts=tuple(accounts), instruments=instruments, debts=debts
+            accounts=tuple(accounts),
+            instruments=instruments,
+            debts=debts,
         )
 
     async def _async_update_data(self) -> UniredData:
@@ -144,33 +141,31 @@ class UniredCoordinator(DataUpdateCoordinator[UniredData]):
                 return await self._fetch(tokens.access_token)
             except UniredAuthError as err:
                 if err.code not in REFRESH_CODES:
-                    raise ConfigEntryAuthFailed(
-                        f"Unired rejected the session ({err.code}); re-pair required"
-                    ) from err
+                    msg = f"Unired rejected the session ({err.code}); re-pair required"
+                    raise ConfigEntryAuthFailed(msg) from err
                 tokens = await self._refresh_tokens(force=True)
                 try:
                     return await self._fetch(tokens.access_token)
                 except UniredAuthError as retry_err:
-                    raise ConfigEntryAuthFailed(
-                        "Unired rejected the refreshed session; re-pair required"
-                    ) from retry_err
+                    msg = "Unired rejected the refreshed session; re-pair required"
+                    raise ConfigEntryAuthFailed(msg) from retry_err
         except ConfigEntryAuthFailed:
             raise
         except UniredAuthError as err:
-            raise ConfigEntryAuthFailed(
-                f"Unired session invalid ({err.code}); re-pair required"
-            ) from err
+            msg = f"Unired session invalid ({err.code}); re-pair required"
+            raise ConfigEntryAuthFailed(msg) from err
         except UniredRateLimitError as err:
-            raise UpdateFailed(
-                f"Unired rate limit: {err}",
-                retry_after=_RATE_LIMIT_RETRY_AFTER_S,
-            ) from err
+            msg = f"Unired rate limit: {err}"
+            raise UpdateFailed(msg, retry_after=_RATE_LIMIT_RETRY_AFTER_S) from err
         except (UniredConnectionError, UniredError) as err:
-            raise UpdateFailed(f"Unired request failed: {err}") from err
-        raise UpdateFailed("Unired poll failed without data")  # pragma: no cover
+            msg = f"Unired request failed: {err}"
+            raise UpdateFailed(msg) from err
 
     async def async_add_account(
-        self, company_uuid: str, identifier: str, nickname: str
+        self,
+        company_uuid: str,
+        identifier: str,
+        nickname: str,
     ) -> None:
         """Link a service server-side, then reload so sensors appear."""
         tokens = await self._refresh_tokens()

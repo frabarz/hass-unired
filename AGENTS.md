@@ -25,8 +25,8 @@ deployment.
 
 ## Setup Commands
 
-- Enter dev env: `nix develop` (provides Python 3.14.x, HA 2026.9.x,
-  `pytest`, `ruff`; all commands below assume this shell).
+- Enter dev env: `nix develop` (provides Python 3.14.x, HA 2026.10.x,
+  `pytest`, `ruff`, `zuban`; all commands below assume this shell).
 - Inspect outputs: `nix flake show`
 - Check everything: `nix flake check`
 
@@ -64,6 +64,8 @@ deployment.
 ## Testing Instructions
 
 - Run all tests: `pytest tests/ -q` (from repo root, inside `nix develop`).
+- Type check: `zuban check` (inside `nix develop` so imports resolve;
+  config and the two scoped false-positive overrides live in `pyproject.toml`).
 - Suite: `test_manifest` (packaging sync) + `test_api`/`test_models`
   (client, fake aiohttp session) + `test_auth` (pairing tree) +
   `test_config_flow`/`test_options_flow` (phcc, mocked auth layer) +
@@ -107,8 +109,9 @@ deployment.
   - HA 2026.10 types flow `data_schema` as `probatio.Schema`, but
     `voluptuous` still validates fine at runtime (proven by the flow tests)
     and keeps the 2026.1 floor where `probatio` may not exist — never import
-    it. The zuban LSP flags vol schemas and some HA base-class properties;
-    that noise is not part of the gate (`ruff` + `pytest`).
+    it. Zuban flags these vol schemas, and it treats `SensorEntity`'s
+    `cached_property` members as read-write; `pyproject.toml` scopes those
+    `arg-type`/`misc` false positives to the affected modules.
   - `async_set_unique_id` is a coroutine — awaiting it is what makes
     duplicate-entry aborts work; every `async_show_form(step_id=…)` needs a
     matching `async_step_<id>` handler or HA raises `UnknownStep`.

@@ -15,3 +15,22 @@ select = ["E", "F", "I", "UP", "B", "ASYNC"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+# Run `zuban check` inside `nix develop` so it can resolve HA/aiohttp.
+[tool.zuban]
+
+# HA 2026.10 types `data_schema` as probatio.Schema while voluptuous still
+# validates at runtime; we keep voluptuous to preserve the 2026.1 floor.
+[[tool.zuban.overrides]]
+module = [
+  "custom_components.unired.config_flow",
+  "custom_components.unired.options_flow",
+]
+disable_error_code = ["arg-type"]
+
+# SensorEntity's native_value/extra_state_attributes are propcache
+# cached_properties, which zuban treats as read-write. Overriding them with
+# plain @property is the correct HA pattern (cached values would go stale).
+[[tool.zuban.overrides]]
+module = ["custom_components.unired.sensor"]
+disable_error_code = ["misc"]

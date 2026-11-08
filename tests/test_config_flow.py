@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -58,14 +59,14 @@ def _tokens_data() -> dict[str, Any]:
     }
 
 
-async def _init(hass: HomeAssistant) -> dict[str, Any]:
+async def _init(hass: HomeAssistant) -> ConfigFlowResult:
     """Start a fresh user flow."""
     return await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
 
 
-async def _configure(hass: HomeAssistant, flow_id: str, data: dict) -> dict[str, Any]:
+async def _configure(hass: HomeAssistant, flow_id: str, data: dict) -> ConfigFlowResult:
     """Submit a flow step."""
     return await hass.config_entries.flow.async_configure(flow_id, data)
 

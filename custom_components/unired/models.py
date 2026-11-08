@@ -47,7 +47,7 @@ class Tokens:
         now = now or datetime.now(UTC)
         return not now < self.expires_at
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, str | None]:
         """Serialize to the wire-format triple stored in the entry data."""
         return {
             "accessToken": self.access_token,

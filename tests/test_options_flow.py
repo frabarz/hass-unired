@@ -7,6 +7,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 import pytest
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -47,7 +48,7 @@ async def _open(hass: HomeAssistant, entry: MockConfigEntry) -> str:
     return result["flow_id"]
 
 
-async def _goto(hass: HomeAssistant, flow_id: str, step: str) -> dict[str, Any]:
+async def _goto(hass: HomeAssistant, flow_id: str, step: str) -> ConfigFlowResult:
     return await hass.config_entries.options.async_configure(
         flow_id, {"next_step_id": step}
     )

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -13,10 +11,10 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import APP_VERSION, ATTRIBUTION, DOMAIN
 from .coordinator import UniredCoordinator
 from .entity import UniredEntity
-from .models import Account, DebtSummary, Instrument
+from .models import Account, Bill, DebtSummary, Instrument, UniredData
 
 
-def _bill_dict(bill: Any) -> dict[str, Any]:
+def _bill_dict(bill: Bill) -> dict[str, object]:
     """Serialize one bill for state attributes (no raw PII blob)."""
     return {
         "amount": bill.amount,
@@ -70,7 +68,9 @@ class UniredBillSensor(UniredEntity, SensorEntity):
         )
 
     def _summary(self) -> DebtSummary | None:
-        data = self.coordinator.data
+        # Typed as optional so the guard stays reachable: entities are added
+        # after the first refresh, but a defensive check costs nothing.
+        data: UniredData | None = self.coordinator.data
         if data is None:
             return None
         return data.debt_for(self._account_uuid, self._instrument_uuid)
@@ -84,7 +84,7 @@ class UniredBillSensor(UniredEntity, SensorEntity):
         return summary.owed_total
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return bill detail backing cards and automations."""
         summary = self._summary()
         if summary is None:
