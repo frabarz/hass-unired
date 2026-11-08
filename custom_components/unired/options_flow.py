@@ -141,12 +141,25 @@ class UniredOptionsFlow(OptionsFlow):
             step_id="add_details", data_schema=self._details_schema()
         )
 
+    def _company_name(self) -> str:
+        """Name of the picked company (empty when linking by raw UUID)."""
+        return next(
+            (
+                company.company_name
+                for company in self._catalog
+                if company.company_uuid == self._company_uuid
+            ),
+            "",
+        )
+
     def _details_schema(self) -> vol.Schema:
         own_rut = str(self._entry.data.get(CONF_RUT, ""))
+        # The nickname becomes the device name / entity id and is stored on
+        # Unired, so default it to the company, never to the holder's RUT.
         return vol.Schema(
             {
                 vol.Required(CONF_IDENTIFIER, default=own_rut): str,
-                vol.Required(CONF_NICKNAME, default=own_rut): str,
+                vol.Required(CONF_NICKNAME, default=self._company_name()): str,
             }
         )
 

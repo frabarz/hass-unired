@@ -53,6 +53,20 @@ async def _goto(hass: HomeAssistant, flow_id: str, step: str) -> dict[str, Any]:
     )
 
 
+def _defaults(schema: Any) -> dict[str, Any]:
+    """Field defaults of a flow form, keyed by field name.
+
+    Voluptuous 0.16 stores marker defaults as zero-argument factories.
+    """
+    defaults: dict[str, Any] = {}
+    for marker in schema.schema:
+        if not isinstance(getattr(marker, "schema", None), str):
+            continue
+        default = getattr(marker, "default", None)
+        defaults[marker.schema] = default() if callable(default) else default
+    return defaults
+
+
 async def test_add_service_links_and_reloads(
     hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -93,6 +107,9 @@ async def test_add_service_links_and_reloads(
         flow_id, {"company_uuid": "c-uuid"}
     )
     assert result["step_id"] == "add_details"
+    defaults = _defaults(result["data_schema"])
+    assert defaults["nickname"] == "CGE S.A."  # company, not the holder RUT
+    assert defaults["identifier"] == "172143520"  # own RUT stays the default
     result = await hass.config_entries.options.async_configure(
         flow_id, {"identifier": "17.214.352-0", "nickname": "Casa"}
     )
@@ -131,6 +148,7 @@ async def test_add_service_blank_fields_rejected(
         flow_id, {"company_uuid": "c-uuid"}
     )
     assert result["step_id"] == "add_details"
+    assert _defaults(result["data_schema"])["nickname"] == ""  # unknown company
     result = await hass.config_entries.options.async_configure(
         flow_id, {"identifier": "  ", "nickname": "Casa"}
     )
